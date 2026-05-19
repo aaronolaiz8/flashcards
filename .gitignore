@@ -1,0 +1,35 @@
+# Build outputs
+bin/
+obj/
+
+# .NET
+*.user
+*.suo
+.vs/
+*.userprefs
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Environment / secrets
+appsettings.Local.json
+*.local.json
+.env
+.env.*
+
+# NuGet
+*.nupkg
+packages/
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
