@@ -33,10 +33,13 @@ public class AuthService(AppDbContext db, IConfiguration config, IEmailService e
         db.Users.Add(user);
         await db.SaveChangesAsync();
 
-        // Send verification email in background (fire and forget)
-        _ = SendVerificationEmailAsync(user);
+        var tokens = await IssueTokensAsync(user);
 
-        return await IssueTokensAsync(user);
+        // All DB work is sequential on this scoped DbContext; only the email
+        // network send is fire-and-forget (DbContext is not thread-safe).
+        await QueueVerificationEmailAsync(user);
+
+        return tokens;
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -214,25 +217,27 @@ public class AuthService(AppDbContext db, IConfiguration config, IEmailService e
     private static UserDto MapToDto(User user) =>
         new(user.Id, user.Email, user.DisplayName, user.Role.ToString(), user.EmailVerifiedAt.HasValue);
 
-    private async Task SendVerificationEmailAsync(User user)
+    private async Task QueueVerificationEmailAsync(User user)
     {
-        try
+        // DB write happens on the request's DbContext (sequential, not concurrent).
+        var token = GenerateSecureToken();
+        db.PasswordResetTokens.Add(new PasswordResetToken
         {
-            var token = GenerateSecureToken();
-            db.PasswordResetTokens.Add(new PasswordResetToken
-            {
-                UserId = user.Id,
-                TokenHash = HashToken(token),
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
-            });
-            await db.SaveChangesAsync();
+            UserId = user.Id,
+            TokenHash = HashToken(token),
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
+        });
+        await db.SaveChangesAsync();
 
-            var verifyLink = $"{_appBaseUrl}/verify-email?token={token}";
-            await emailService.SendEmailVerificationAsync(user.Email, user.DisplayName, verifyLink);
-        }
-        catch
+        var verifyLink = $"{_appBaseUrl}/verify-email?token={token}";
+        var email = user.Email;
+        var name = user.DisplayName;
+
+        // The email network send is non-blocking and does NOT touch the DbContext.
+        _ = Task.Run(async () =>
         {
-            // Verification email failure is non-blocking
-        }
+            try { await emailService.SendEmailVerificationAsync(email, name, verifyLink); }
+            catch { /* verification email failure is non-blocking */ }
+        });
     }
 }
