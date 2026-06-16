@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Light Bootstrap Dashboard palette */
+  --color-brand-50: #f3eefc;
+  --color-brand-100: #e2d3f8;
+  --color-brand-500: #9368e9;
+  --color-brand-600: #7c4dee;
+  --color-brand-700: #6438c2;
+
+  --color-info-100: #d9f3f8;
+  --color-info-500: #51bcda;
+  --color-info-600: #3aa8c7;
+
+  --color-success-100: #def4e7;
+  --color-success-500: #6bd098;
+  --color-success-600: #4cb87f;
+
+  --color-warning-100: #fef0d4;
+  --color-warning-500: #fbc658;
+  --color-warning-600: #f4ad28;
+
+  --color-danger-100: #fce3da;
+  --color-danger-500: #ef8157;
+  --color-danger-600: #e8623a;
+
+  --color-surface: #f4f3ef;
+  --color-surface-card: #ffffff;
+  --color-border-soft: #e8e6ea;
+  --color-text-muted: #9a9a9a;
+  --color-text-heading: #252422;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-[15px] text-gray-700 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-text-heading font-medium;
+  }
+}
