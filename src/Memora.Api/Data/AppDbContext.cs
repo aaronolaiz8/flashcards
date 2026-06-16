@@ -72,12 +72,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<CardMemoryState>(e =>
         {
-            // Card is the primary DB cascade path; User is softened to ClientCascade
-            // to avoid SQL Server multiple-cascade-paths (User->Decks->Cards->MemoryStates
-            // and User->MemoryStates both reach this table). User deletion still removes
-            // these rows via the Card path.
+            // Postgres allows multiple cascade paths, so both User and Card cascade at the DB level.
             e.HasOne(s => s.User).WithMany(u => u.CardMemoryStates)
-                .HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.ClientCascade);
+                .HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(s => s.Card).WithMany(c => c.MemoryStates)
                 .HasForeignKey(s => s.CardId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(s => new { s.UserId, s.CardId }).IsUnique();
@@ -86,23 +83,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<ReviewLog>(e =>
         {
-            // Card is the primary DB cascade path; Session is softened to ClientCascade
-            // to avoid SQL Server multiple-cascade-paths into ReviewLogs.
+            // Postgres allows multiple cascade paths, so both Card and Session cascade.
             e.HasOne(r => r.Card).WithMany(c => c.ReviewLogs)
                 .HasForeignKey(r => r.CardId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(r => r.Session).WithMany(s => s.ReviewLogs)
-                .HasForeignKey(r => r.SessionId).OnDelete(DeleteBehavior.ClientCascade);
+                .HasForeignKey(r => r.SessionId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<StudySession>(e =>
         {
-            // User is the primary DB cascade path; Goal uses ClientSetNull (EF nulls GoalId
-            // on tracked sessions; DB FK is NO ACTION) to avoid SQL Server multiple-cascade-paths
-            // into StudySessions. Goal deletion still detaches sessions per spec.
+            // Postgres allows multiple cascade paths: User cascades, Goal sets null on delete (per spec).
             e.HasOne(s => s.User).WithMany(u => u.StudySessions)
                 .HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(s => s.Goal).WithMany(g => g.StudySessions)
-                .HasForeignKey(s => s.GoalId).OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(s => s.GoalId).OnDelete(DeleteBehavior.SetNull);
             e.Property(s => s.Mode).HasConversion<string>();
         });
 
@@ -115,13 +109,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<GoalDeck>(e =>
         {
-            // Goal is the primary DB cascade path; Deck is softened to ClientCascade
-            // to avoid SQL Server multiple-cascade-paths into GoalDecks. Per spec, deck
-            // removal from a goal is handled in app logic (goal survives, budget recalculated).
+            // Postgres allows multiple cascade paths, so both Goal and Deck cascade at the DB level.
+            // (App-level goal-budget recalculation on deck removal will live in GoalService.)
             e.HasOne(gd => gd.Goal).WithMany(g => g.GoalDecks)
                 .HasForeignKey(gd => gd.GoalId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(gd => gd.Deck).WithMany(d => d.GoalDecks)
-                .HasForeignKey(gd => gd.DeckId).OnDelete(DeleteBehavior.ClientCascade);
+                .HasForeignKey(gd => gd.DeckId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(gd => new { gd.GoalId, gd.DeckId }).IsUnique();
             ConfigureNullableStringArray(e.Property(gd => gd.CardFilterTags), isNpgsql);
         });
