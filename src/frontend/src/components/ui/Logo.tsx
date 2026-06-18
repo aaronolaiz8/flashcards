@@ -1,6 +1,6 @@
 import { cn } from "../../lib/cn";
 
-/** Memora brand mark — an "M" drawn in white on the brand-purple tile. */
+/** Retainica brand mark — an "M" drawn in white on the brand-purple tile. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cn("h-8 w-8", className)} aria-hidden="true">
@@ -17,12 +17,12 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-/** Full Memora lockup: mark + wordmark. */
+/** Full Retainica lockup: mark + wordmark. */
 export function Logo({ className, markClassName }: { className?: string; markClassName?: string }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <LogoMark className={markClassName} />
-      <span className="text-lg font-semibold tracking-tight text-text-heading">Memora</span>
+      <span className="text-lg font-semibold tracking-tight text-text-heading">Retainica</span>
     </div>
   );
 }

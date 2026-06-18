@@ -38,7 +38,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthCard title="Welcome back" subtitle="Sign in to Memora">
+    <AuthCard title="Welcome back" subtitle="Sign in to Retainica">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <TextField label="Email" type="email" {...register("email")} error={errors.email?.message} />
         <TextField

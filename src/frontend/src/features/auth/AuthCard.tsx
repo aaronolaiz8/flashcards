@@ -15,7 +15,7 @@ export function AuthCard({
       <div className="w-full max-w-sm">
         <div className="mb-6 flex items-center justify-center gap-2">
           <LogoMark className="h-9 w-9" />
-          <span className="text-xl font-semibold tracking-tight text-text-heading">Memora</span>
+          <span className="text-xl font-semibold tracking-tight text-text-heading">Retainica</span>
         </div>
         <div className="rounded-2xl bg-surface-card p-8 shadow-sm">
           <h1 className="text-xl font-semibold text-text-heading">{title}</h1>

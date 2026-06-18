@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Retainica.Api/Retainica.Api.csproj" />
+  </Folder>
+</Solution>
