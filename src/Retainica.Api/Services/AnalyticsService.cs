@@ -34,12 +34,18 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
         var statesPerDeck = states.GroupBy(s => s.DeckId).ToDictionary(g => g.Key, g => g.Count());
         var newAvailable = decks.Sum(d => Math.Max(0, d.CardCount - statesPerDeck.GetValueOrDefault(d.Id, 0)));
 
+        // "Due" matches what the Study runner actually serves: scheduled at or before now
+        // (StudyService uses NextReviewDate <= now). Counting by calendar date instead would
+        // include cards scheduled for later today (e.g. short learning steps) that you can't
+        // study yet, leaving the count stuck above 0 after you've cleared everything servable.
         DateOnly? DueDate(DateTime? d) => d.HasValue ? DateOnly.FromDateTime(d.Value) : null;
-        var dueScheduledToday = states.Count(s => DueDate(s.NextReviewDate) is { } dd && dd <= today);
+        bool DueNow(DateTime? d) => d.HasValue && d.Value <= now;
+        var dueScheduledNow = states.Count(s => DueNow(s.NextReviewDate));
         var newStateRows = states.Count(s => s.State == CardState.New && s.NextReviewDate == null);
-        var cardsDueToday = newAvailable + newStateRows + dueScheduledToday;
+        var cardsDueToday = newAvailable + newStateRows + dueScheduledNow;
 
-        // 7-day due forecast (today's bucket = everything due now incl. new + overdue).
+        // 7-day due forecast (today's bucket = everything due now incl. new + overdue;
+        // future buckets count cards scheduled on that calendar date).
         var dueForecast = new List<DueForecastDto>(ForecastDays);
         for (var i = 0; i < ForecastDays; i++)
         {
@@ -57,7 +63,7 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
                 d.Id,
                 d.Title,
                 Due = Math.Max(0, d.CardCount - statesPerDeck.GetValueOrDefault(d.Id, 0))
-                      + states.Count(s => s.DeckId == d.Id && DueDate(s.NextReviewDate) is { } dd && dd <= today)
+                      + states.Count(s => s.DeckId == d.Id && DueNow(s.NextReviewDate))
             })
             .Where(d => d.Due > 0)
             .OrderByDescending(d => d.Due)
