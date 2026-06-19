@@ -3,6 +3,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import { Search, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import { MobileNav } from "./MobileNav";
 
 export function Topbar({ title }: { title: string }) {
   const navigate = useNavigate();
@@ -17,7 +18,10 @@ export function Topbar({ title }: { title: string }) {
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border-soft bg-white px-6 lg:pl-72">
-      <h1 className="text-lg font-medium text-text-heading">{title}</h1>
+      <div className="flex items-center gap-2">
+        <MobileNav />
+        <h1 className="text-lg font-medium text-text-heading">{title}</h1>
+      </div>
 
       <div className="flex items-center gap-4">
         <div className="hidden items-center gap-2 rounded-full bg-surface px-4 py-2 sm:flex">
