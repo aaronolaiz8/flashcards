@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
 type StatCardColor = "brand" | "info" | "success" | "warning" | "danger";
@@ -17,15 +18,22 @@ export function StatCard({
   value,
   footer,
   color = "brand",
+  to,
 }: {
   icon: LucideIcon;
   label: string;
   value: string | number;
   footer?: string;
   color?: StatCardColor;
+  to?: string;
 }) {
-  return (
-    <div className="rounded-xl bg-surface-card p-5 shadow-sm">
+  const card = (
+    <div
+      className={cn(
+        "h-full rounded-xl bg-surface-card p-5 shadow-sm transition-shadow",
+        to && "hover:shadow-md",
+      )}
+    >
       <div className="flex items-center gap-4">
         <div className={cn("flex h-12 w-12 items-center justify-center rounded-full", colorClasses[color])}>
           <Icon className="h-5 w-5" strokeWidth={1.75} />
@@ -42,4 +50,13 @@ export function StatCard({
       )}
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+        {card}
+      </Link>
+    );
+  }
+  return card;
 }

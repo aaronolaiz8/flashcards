@@ -11,6 +11,13 @@ namespace Retainica.Api.Controllers;
 [Authorize]
 public class AnalyticsController(IAnalyticsService analyticsService) : ControllerBase
 {
+    [HttpGet("overview")]
+    public async Task<ActionResult<DashboardOverviewDto>> GetOverview()
+    {
+        var result = await analyticsService.GetOverviewAsync(User.GetUserId());
+        return Ok(result);
+    }
+
     [HttpGet("dashboard")]
     public async Task<ActionResult<DashboardDto>> GetDashboard()
     {

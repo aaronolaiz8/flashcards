@@ -4,6 +4,7 @@ namespace Retainica.Api.Services.Interfaces;
 
 public interface IAnalyticsService
 {
+    Task<DashboardOverviewDto> GetOverviewAsync(int userId);
     Task<DashboardDto> GetDashboardAsync(int userId);
     Task<DeckAnalyticsDto> GetDeckAnalyticsAsync(int deckId, int userId);
     Task<CardHistoryDto> GetCardHistoryAsync(int cardId, int userId);
