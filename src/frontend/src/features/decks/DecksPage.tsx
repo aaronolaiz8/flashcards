@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, Layers } from "lucide-react";
+import { Plus, Pencil, Trash2, Layers, Upload } from "lucide-react";
 import { DataTable } from "../../components/layout/DataTable";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -8,6 +8,7 @@ import { apiErrorMessage } from "../../services/api";
 import type { DeckSummary } from "../../types";
 import { decksApi, type DeckInput } from "./decksApi";
 import { DeckFormDialog } from "./DeckFormDialog";
+import { ImportDeckDialog } from "./ImportDeckDialog";
 
 const visibilityStyles: Record<string, string> = {
   Private: "bg-gray-100 text-gray-600",
@@ -21,6 +22,7 @@ export function DecksPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<DeckSummary | null>(null);
   const [deleting, setDeleting] = useState<DeckSummary | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -80,9 +82,14 @@ export function DecksPage() {
         <p className="text-sm text-text-muted">
           {decks.length} {decks.length === 1 ? "deck" : "decks"}
         </p>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="h-4 w-4" /> New deck
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" /> Import
+          </Button>
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="h-4 w-4" /> New deck
+          </Button>
+        </div>
       </div>
 
       {error && <p className="rounded-lg bg-danger-100 px-4 py-3 text-sm text-danger-600">{error}</p>}
@@ -178,6 +185,8 @@ export function DecksPage() {
         deck={editing}
         onSubmit={handleSubmit}
       />
+
+      <ImportDeckDialog open={importOpen} onOpenChange={setImportOpen} onImported={load} />
 
       <ConfirmDialog
         open={Boolean(deleting)}

@@ -28,4 +28,8 @@ export const decksApi = {
   async remove(id: number): Promise<void> {
     await api.delete(`/decks/${id}`);
   },
+  async importDeck(input: { format: "csv" | "json"; content: string; title?: string }): Promise<DeckDetail> {
+    const { data } = await api.post<DeckDetail>("/decks/import", input);
+    return data;
+  },
 };

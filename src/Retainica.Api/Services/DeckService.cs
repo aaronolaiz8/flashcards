@@ -171,6 +171,10 @@ public class DeckService(AppDbContext db) : IDeckService
             _ => throw new ArgumentException($"Unsupported import format: {request.Format}")
         };
 
+        // Caller-supplied title wins over CSV's default / the JSON file's own title.
+        if (!string.IsNullOrWhiteSpace(request.Title))
+            deck.Title = request.Title.Trim();
+
         db.Decks.Add(deck);
         await db.SaveChangesAsync();
         return ToDetail(deck, deck.Cards.Count);
