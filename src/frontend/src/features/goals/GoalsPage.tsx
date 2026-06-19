@@ -75,7 +75,7 @@ export function GoalsPage() {
             <Target className="h-6 w-6" />
           </div>
           <p className="font-medium text-text-heading">No goals yet</p>
-          <p className="mb-4 mt-1 text-sm text-text-muted">Set a daily review target to build a study streak.</p>
+          <p className="mb-4 mt-1 text-sm text-text-muted">Set a daily goal and build a streak.</p>
           <Button onClick={() => setFormOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" /> New goal
           </Button>
@@ -106,7 +106,7 @@ export function GoalsPage() {
 
                 <div className="mt-4 flex items-center justify-between text-sm">
                   <span className="text-text-muted">
-                    <span className="font-semibold text-text-heading">{goal.reviewsToday}</span> / {goal.dailyReviewBudget} today
+                    <span className="font-semibold text-text-heading">{goal.reviewsToday}</span> of {goal.dailyReviewBudget} cards today
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-warning-100 px-2.5 py-1 text-xs font-medium text-warning-600">
                     <Flame className="h-3.5 w-3.5" /> {goal.currentStreak}-day streak

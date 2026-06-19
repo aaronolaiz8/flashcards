@@ -107,7 +107,7 @@ function GoalCard({ data }: { data: DashboardOverview }) {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-100 text-success-600">
             <Target className="h-6 w-6" />
           </div>
-          <p className="text-sm text-text-muted">Set a daily review goal to build a streak.</p>
+          <p className="text-sm text-text-muted">Set a daily goal to build a streak.</p>
           <Link to="/goals" className="mt-4">
             <Button className="gap-2">
               <Plus className="h-4 w-4" /> Create a goal
@@ -151,7 +151,7 @@ function GoalCard({ data }: { data: DashboardOverview }) {
         <div className="min-w-0">
           {goal.label && <p className="truncate font-medium text-text-heading">{goal.label}</p>}
           <p className="mt-1 text-sm text-text-muted">
-            <span className="font-semibold text-text-heading">{goal.reviewsToday}</span> / {goal.dailyReviewTarget} reviews
+            <span className="font-semibold text-text-heading">{goal.reviewsToday}</span> of {goal.dailyReviewTarget} cards today
           </p>
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-warning-100 px-2.5 py-1 text-xs font-medium text-warning-600">
             <Flame className="h-3.5 w-3.5" /> {goal.currentStreak}-day streak
