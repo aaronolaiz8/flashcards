@@ -15,6 +15,13 @@ public class FsrsService : IFsrsService
     private const float TargetRetentionHard = 0.85f;
     private const float TargetRetentionEasy = 0.95f;
 
+    // FSRS standard bounds: stability is clamped to [0.01, 36500] days and the
+    // resulting interval to a maximum of 36500 days (~100 years). This keeps
+    // NextReviewDate well inside DateTime range and prevents overflow.
+    private const float MinStability = 0.01f;
+    private const float MaxStability = 36500f;
+    private const double MaxIntervalDays = 36500d;
+
     // Learning steps in minutes: [1, 10], graduating = 1 day, easy = 4 days
     private static readonly int[] LearningStepMinutes = [1, 10];
     private const int GraduatingIntervalDays = 1;
@@ -127,10 +134,8 @@ public class FsrsService : IFsrsService
         };
 
         float newS = ComputeNewStability(s, d, r, rating);
-        float intervalDays = MathF.Max(1f, newS * MathF.Log(targetR) / MathF.Log(0.9f));
-
         state.Stability = newS;
-        state.NextReviewDate = reviewedAt.AddDays(intervalDays);
+        state.NextReviewDate = reviewedAt.AddDays(IntervalDays(newS, targetR));
     }
 
     private void ProcessRelearningCard(CardMemoryState state, int rating, DateTime reviewedAt)
@@ -144,7 +149,7 @@ public class FsrsService : IFsrsService
         // Pass relearning — re-enter Review with current stability
         state.State = CardState.Review;
         float s = state.Stability ?? 1f;
-        state.NextReviewDate = reviewedAt.AddDays(MathF.Max(1f, s));
+        state.NextReviewDate = reviewedAt.AddDays(Math.Clamp((double)MathF.Max(1f, s), 1d, MaxIntervalDays));
     }
 
     private void AdvanceLearningStep(CardMemoryState state, int rating, DateTime reviewedAt)
@@ -183,19 +188,29 @@ public class FsrsService : IFsrsService
         _ => 5f
     };
 
+    // Days until retrievability decays to the target, clamped to FSRS' interval cap.
+    private static double IntervalDays(float stability, float targetRetention)
+    {
+        double days = stability * Math.Log(targetRetention) / Math.Log(0.9d);
+        return Math.Clamp(days, 1d, MaxIntervalDays);
+    }
+
+    // FSRS-4.5 stability after a successful recall (rating >= 2). The S^(-w9) term
+    // damps growth as a card matures, so stability converges instead of exploding;
+    // hard penalty (w15) and easy bonus (w16) scale the increase by rating.
     private float ComputeNewStability(float s, float d, float r, int rating)
     {
-        float ratingFactor = rating switch
-        {
-            2 => -0.15f,
-            3 => 0f,
-            4 => 0.15f,
-            _ => 0f
-        };
+        float hardPenalty = rating == 2 ? W[15] : 1f;
+        float easyBonus = rating == 4 ? W[16] : 1f;
 
-        float modifier = MathF.Exp(W[8] * (11f - d) * MathF.Pow(r, W[9]) *
-            (MathF.Exp(W[10] * (1f - ratingFactor)) - 1f));
+        float increase = MathF.Exp(W[8])
+            * (11f - d)
+            * MathF.Pow(s, -W[9])
+            * (MathF.Exp((1f - r) * W[10]) - 1f)
+            * hardPenalty
+            * easyBonus;
 
-        return MathF.Max(0.1f, s * modifier);
+        float newS = s * (1f + increase);
+        return Math.Clamp(newS, MinStability, MaxStability);
     }
 }
