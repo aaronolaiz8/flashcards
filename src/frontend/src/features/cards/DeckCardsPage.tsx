@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, ArrowLeft, Layers, GraduationCap } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, Layers, GraduationCap, Sparkles } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { apiErrorMessage } from "../../services/api";
@@ -94,6 +94,11 @@ export function DeckCardsPage() {
                 </Button>
               </Link>
             )}
+            <Link to={`/ai?deckId=${id}`}>
+              <Button variant="secondary" className="gap-2">
+                <Sparkles className="h-4 w-4" /> Generate with AI
+              </Button>
+            </Link>
             <Button onClick={openCreate} className="gap-2">
               <Plus className="h-4 w-4" /> Add card
             </Button>

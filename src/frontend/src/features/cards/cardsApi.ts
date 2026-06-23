@@ -23,4 +23,8 @@ export const cardsApi = {
   async remove(deckId: number, cardId: number): Promise<void> {
     await api.delete(`/decks/${deckId}/cards/${cardId}`);
   },
+  async bulkCreate(deckId: number, cards: CardInput[]): Promise<Card[]> {
+    const { data } = await api.post<Card[]>(`/decks/${deckId}/cards/bulk`, cards);
+    return data;
+  },
 };

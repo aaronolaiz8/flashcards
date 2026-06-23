@@ -111,3 +111,16 @@ export interface CreateGoalInput {
   deckIds?: number[];
   deadlineDate?: string | null;
 }
+
+// --- AI generation ---
+
+export interface AiSettings {
+  provider: string | null; // "Anthropic" | "OpenAI" | null
+  model: string | null;
+  isConfigured: boolean;
+}
+
+export interface GeneratedCard {
+  front: string;
+  back: string;
+}

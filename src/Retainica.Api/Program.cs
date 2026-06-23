@@ -4,6 +4,7 @@ using Retainica.Api.Infrastructure;
 using Retainica.Api.Jobs;
 using Retainica.Api.Middleware;
 using Retainica.Api.Services;
+using Retainica.Api.Services.Ai;
 using Retainica.Api.Services.Interfaces;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -76,6 +77,13 @@ builder.Services.AddScoped<IAiSettingsService, AiSettingsService>();
 builder.Services.AddScoped<IFsrsService, FsrsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ReminderJob>();
+
+// AI card generation: at-rest key encryption + provider HTTP clients.
+builder.Services.AddSingleton<IEncryptionService, AesGcmEncryptionService>();
+builder.Services.AddHttpClient("ai", c => c.Timeout = TimeSpan.FromSeconds(100));
+builder.Services.AddScoped<IAiProvider, AnthropicProvider>();
+builder.Services.AddScoped<IAiProvider, OpenAiProvider>();
+builder.Services.AddScoped<IAiProviderFactory, AiProviderFactory>();
 
 var app = builder.Build();
 
