@@ -10,7 +10,6 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "../../lib/cn";
-import { Logo } from "../ui/Logo";
 
 export const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -52,9 +51,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border-soft bg-white lg:flex">
-      <div className="flex h-16 items-center px-6">
-        <Logo />
-      </div>
+      {/* Spacer matching the topbar height; the brand lockup is rendered in the
+          topbar gutter (Topbar.tsx) so it sits above this bar. */}
+      <div className="h-16" />
 
       <SidebarNav />
 

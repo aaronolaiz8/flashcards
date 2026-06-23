@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { MobileNav } from "./MobileNav";
+import { Logo } from "../ui/Logo";
 
 export function Topbar({ title }: { title: string }) {
   const navigate = useNavigate();
@@ -18,6 +19,12 @@ export function Topbar({ title }: { title: string }) {
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border-soft bg-white px-6 lg:pl-72">
+      {/* Brand lockup fills the sidebar-width gutter on desktop (the sidebar's own
+          logo row sits behind this bar, so we render it here instead). */}
+      <div className="absolute inset-y-0 left-0 hidden w-64 items-center px-6 lg:flex">
+        <Logo markClassName="h-11 w-11" />
+      </div>
+
       <div className="flex items-center gap-2">
         <MobileNav />
         <h1 className="text-lg font-medium text-text-heading">{title}</h1>

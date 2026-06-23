@@ -23,7 +23,7 @@ export function MobileNav() {
         <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white shadow-xl focus:outline-none lg:hidden">
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
           <div className="flex h-16 items-center justify-between px-6">
-            <Logo />
+            <Logo markClassName="h-11 w-11" />
             <Dialog.Close className="rounded-md p-1 text-text-muted hover:bg-surface" aria-label="Close menu">
               <X className="h-5 w-5" />
             </Dialog.Close>
