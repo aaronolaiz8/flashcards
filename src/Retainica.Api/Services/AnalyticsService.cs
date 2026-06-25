@@ -27,20 +27,25 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
         // Per-card memory states (with owning deck) — drives due counts and the forecast.
         var states = await db.CardMemoryStates
             .Where(s => s.UserId == userId)
-            .Select(s => new { s.State, s.NextReviewDate, DeckId = s.Card.DeckId })
+            .Select(s => new { s.State, s.NextReviewDate, s.LastReviewedAt, DeckId = s.Card.DeckId })
             .ToListAsync();
 
         // Cards that have never been reviewed have no state row → they're "New" and available.
         var statesPerDeck = states.GroupBy(s => s.DeckId).ToDictionary(g => g.Key, g => g.Count());
         var newAvailable = decks.Sum(d => Math.Max(0, d.CardCount - statesPerDeck.GetValueOrDefault(d.Id, 0)));
 
-        // "Due" matches what the Study runner actually serves: scheduled at or before now
-        // (StudyService uses NextReviewDate <= now). Counting by calendar date instead would
-        // include cards scheduled for later today (e.g. short learning steps) that you can't
-        // study yet, leaving the count stuck above 0 after you've cleared everything servable.
+        // "Due" counts cards scheduled at or before now (matching the Study runner's
+        // NextReviewDate <= now), but excludes anything already reviewed today: once you've
+        // studied a deck, its cards stop counting as due for the rest of the day even though
+        // short learning steps (e.g. +10 min) re-schedule them within the same day. This keeps
+        // a freshly-studied deck from re-appearing on the dashboard and bouncing you back into
+        // it. New/never-studied cards and cards genuinely overdue from prior days still count;
+        // extra reps on a studied deck remain available by picking it manually from Decks.
         DateOnly? DueDate(DateTime? d) => d.HasValue ? DateOnly.FromDateTime(d.Value) : null;
         bool DueNow(DateTime? d) => d.HasValue && d.Value <= now;
-        var dueScheduledNow = states.Count(s => DueNow(s.NextReviewDate));
+        bool ReviewedToday(DateTime? lastReviewed) =>
+            lastReviewed is { } lr && DateOnly.FromDateTime(lr) == today;
+        var dueScheduledNow = states.Count(s => DueNow(s.NextReviewDate) && !ReviewedToday(s.LastReviewedAt));
         var newStateRows = states.Count(s => s.State == CardState.New && s.NextReviewDate == null);
         var cardsDueToday = newAvailable + newStateRows + dueScheduledNow;
 
@@ -56,17 +61,29 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
             dueForecast.Add(new DueForecastDto(date, count));
         }
 
-        // Most-due deck → powers the one-click "Study now" target.
-        var mostDue = decks
+        // "Study now" target: among decks that actually have cards due, pick the one studied
+        // longest ago. Targeting the *most-due* deck instead biases toward big decks (they
+        // always have more cards due) and would keep dropping you back into the same large
+        // deck; least-recently-studied spreads attention and surfaces neglected decks, while
+        // the due > 0 filter still guarantees you land on something worth studying (never an
+        // empty session). Decks never studied sort first (treated as infinitely stale).
+        var lastStudiedByDeck = await db.StudySessions
+            .Where(s => s.UserId == userId && s.DeckId != null)
+            .GroupBy(s => s.DeckId!.Value)
+            .Select(g => new { DeckId = g.Key, LastStudied = g.Max(s => s.StartedAt) })
+            .ToDictionaryAsync(x => x.DeckId, x => x.LastStudied);
+
+        var nextDeck = decks
             .Select(d => new
             {
                 d.Id,
                 d.Title,
                 Due = Math.Max(0, d.CardCount - statesPerDeck.GetValueOrDefault(d.Id, 0))
-                      + states.Count(s => s.DeckId == d.Id && DueNow(s.NextReviewDate))
+                      + states.Count(s => s.DeckId == d.Id && DueNow(s.NextReviewDate) && !ReviewedToday(s.LastReviewedAt)),
+                LastStudied = lastStudiedByDeck.GetValueOrDefault(d.Id, DateTime.MinValue)
             })
             .Where(d => d.Due > 0)
-            .OrderByDescending(d => d.Due)
+            .OrderBy(d => d.LastStudied)
             .FirstOrDefault();
 
         // Study activity: pull raw timestamps and bucket client-side (avoids provider date-trunc quirks).
@@ -118,7 +135,7 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
         return new DashboardOverviewDto(
             totalDecks, totalCards, cardsDueToday, reviewsToday,
             currentStreak, longestStreak, activeGoals.Count,
-            mostDue?.Id, mostDue?.Title,
+            nextDeck?.Id, nextDeck?.Title,
             dueForecast, deckUsage, reviewsByDay, goalDtos, isEmpty);
     }
 

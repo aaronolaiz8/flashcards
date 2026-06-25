@@ -68,8 +68,8 @@ function buildSample(): DashboardOverview {
     currentStreak: 9,
     longestStreak: 14,
     activeGoals: 1,
-    mostDueDeckId: null,
-    mostDueDeckTitle: "Spanish Vocabulary",
+    nextDeckId: null,
+    nextDeckTitle: "Spanish Vocabulary",
     dueForecast,
     deckUsage: [
       { deckId: 1, title: "Spanish Vocabulary", reviews: 120 },
@@ -262,7 +262,7 @@ export function DashboardPage() {
   const isSample = !overview || overview.isEmpty;
   const data = isSample ? sample : overview;
 
-  const studyHref = data.mostDueDeckId ? `/study?deckId=${data.mostDueDeckId}` : "/study";
+  const studyHref = data.nextDeckId ? `/study?deckId=${data.nextDeckId}` : "/study";
   const recentDecks = decks.slice(0, 5);
 
   if (loading) {

@@ -72,8 +72,8 @@ export interface DashboardOverview {
   currentStreak: number;
   longestStreak: number;
   activeGoals: number;
-  mostDueDeckId: number | null;
-  mostDueDeckTitle: string | null;
+  nextDeckId: number | null;
+  nextDeckTitle: string | null;
   dueForecast: DueForecastPoint[];
   deckUsage: DeckUsagePoint[];
   reviewsByDay: DailyReviewsPoint[];
