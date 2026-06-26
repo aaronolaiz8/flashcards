@@ -8,11 +8,11 @@ namespace Retainica.Api.Services;
 public class EmailService(IConfiguration config, ILogger<EmailService> logger) : IEmailService
 {
     private readonly string _apiKey = config["Resend:ApiKey"] ?? throw new InvalidOperationException("Resend:ApiKey not configured");
-    private readonly string _fromAddress = config["Resend:FromAddress"] ?? "noreply@flashcards.app";
+    private readonly string _fromAddress = config["Resend:FromAddress"] ?? "noreply@retainica.com";
 
     public async Task SendPasswordResetAsync(string email, string displayName, string resetLink)
     {
-        string subject = "Reset your Flashcards password";
+        string subject = "Reset your Retainica password";
         string body = $"""
             Hi {displayName},<br><br>
             Click the link below to reset your password. This link expires in 1 hour.<br><br>
@@ -25,7 +25,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
 
     public async Task SendEmailVerificationAsync(string email, string displayName, string verifyLink)
     {
-        string subject = "Verify your Flashcards email";
+        string subject = "Verify your Retainica email";
         string body = $"""
             Hi {displayName},<br><br>
             Click the link below to verify your email address.<br><br>
