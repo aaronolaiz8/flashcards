@@ -314,7 +314,7 @@ export function StudyPage() {
         </div>
       )}
 
-      <div className="text-center">
+      <div className="text-right">
         <button
           type="button"
           onClick={() => setEditStep("warn")}
