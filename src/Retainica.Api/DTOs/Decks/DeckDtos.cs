@@ -8,5 +8,6 @@ public record DeckDetailDto(int Id, string Title, string? Description, string[] 
 
 public record CreateDeckRequest(string Title, string? Description, string[]? Tags, string Visibility = "Private");
 public record UpdateDeckRequest(string? Title, string? Description, string[]? Tags, string? Visibility);
-public record ImportDeckRequest(string Format, string Content, string? Title = null);
+public record ImportDeckRequest(string Format, string Content, string? Title = null,
+    string? Description = null, string[]? Tags = null);
 public record PagedResult<T>(List<T> Items, int TotalCount, int Page, int PageSize);

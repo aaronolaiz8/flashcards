@@ -171,9 +171,13 @@ public class DeckService(AppDbContext db) : IDeckService
             _ => throw new ArgumentException($"Unsupported import format: {request.Format}")
         };
 
-        // Caller-supplied title wins over CSV's default / the JSON file's own title.
+        // Caller-supplied fields win over the CSV defaults / the JSON file's own values.
         if (!string.IsNullOrWhiteSpace(request.Title))
             deck.Title = request.Title.Trim();
+        if (!string.IsNullOrWhiteSpace(request.Description))
+            deck.Description = request.Description.Trim();
+        if (request.Tags is { Length: > 0 })
+            deck.Tags = request.Tags;
 
         db.Decks.Add(deck);
         await db.SaveChangesAsync();
