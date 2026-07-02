@@ -24,11 +24,14 @@ public record DashboardOverviewDto(
     int ActiveGoals,
     int? NextDeckId,
     string? NextDeckTitle,
+    List<DeckDueDto> DecksDue,
     List<DueForecastDto> DueForecast,
     List<DeckUsageDto> DeckUsage,
     List<DailyReviewsDto> ReviewsByDay,
     List<DashboardGoalDto> Goals,
     bool IsEmpty);
+
+public record DeckDueDto(int DeckId, int CardsDue);
 
 public record DueForecastDto(DateOnly Date, int Count);
 

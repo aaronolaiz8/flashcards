@@ -13,6 +13,8 @@ import { studyApi, type Session, type SessionCard } from "./studyApi";
 
 type Phase = "picker" | "running" | "done";
 
+const cardCount = (n: number) => `${n} card${n === 1 ? "" : "s"}`;
+
 const ratings = [
   { value: 1, label: "Again", className: "bg-danger-500 hover:bg-danger-600 text-white" },
   { value: 2, label: "Hard", className: "bg-warning-500 hover:bg-warning-600 text-white" },
@@ -37,7 +39,8 @@ export function StudyPage() {
   const [revealed, setRevealed] = useState(false);
   const [studied, setStudied] = useState(0);
   const [cardStart, setCardStart] = useState<number>(Date.now());
-  const [nextDeck, setNextDeck] = useState<{ id: number; title: string } | null>(null);
+  const [nextDeck, setNextDeck] = useState<{ id: number; title: string; due: number } | null>(null);
+  const [currentDeckDue, setCurrentDeckDue] = useState<number | null>(null);
 
   // Inline card editing during a session: "warn" shows the one-time confirmation,
   // "form" lets the user edit the front/back text, then study resumes unchanged.
@@ -126,12 +129,23 @@ export function StudyPage() {
   function finishTo(target: "done") {
     setPhase(target);
     setNextDeck(null);
+    setCurrentDeckDue(null);
     analyticsApi
       .overview()
       .then((o) => {
-        setNextDeck(o.nextDeckId ? { id: o.nextDeckId, title: o.nextDeckTitle ?? "deck" } : null);
+        const dueFor = (id: number | null) =>
+          o.decksDue.find((d) => d.deckId === id)?.cardsDue ?? 0;
+        setNextDeck(
+          o.nextDeckId
+            ? { id: o.nextDeckId, title: o.nextDeckTitle ?? "deck", due: dueFor(o.nextDeckId) }
+            : null,
+        );
+        setCurrentDeckDue(dueFor(deckId));
       })
-      .catch(() => setNextDeck(null));
+      .catch(() => {
+        setNextDeck(null);
+        setCurrentDeckDue(null);
+      });
   }
 
   function restart() {
@@ -247,11 +261,12 @@ export function StudyPage() {
             {nextDeck && (
               <Button onClick={() => startSession(nextDeck.id)} className="w-full gap-2" disabled={busy}>
                 <GraduationCap className="h-4 w-4" />
-                {busy ? "Starting..." : `Study next deck: ${nextDeck.title}`}
+                {busy ? "Starting..." : `Next Deck: ${nextDeck.title} : ${cardCount(nextDeck.due)}`}
               </Button>
             )}
             <Button onClick={restart} variant="secondary" className="w-full gap-2" disabled={busy}>
               <RotateCcw className="h-4 w-4" /> Study again
+              {currentDeckDue !== null && ` : ${cardCount(currentDeckDue)}`}
             </Button>
           </div>
         </div>

@@ -70,6 +70,7 @@ function buildSample(): DashboardOverview {
     activeGoals: 1,
     nextDeckId: null,
     nextDeckTitle: "Spanish Vocabulary",
+    decksDue: [],
     dueForecast,
     deckUsage: [
       { deckId: 1, title: "Spanish Vocabulary", reviews: 120 },

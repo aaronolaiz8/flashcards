@@ -44,6 +44,11 @@ export interface DueForecastPoint {
   count: number;
 }
 
+export interface DeckDuePoint {
+  deckId: number;
+  cardsDue: number;
+}
+
 export interface DeckUsagePoint {
   deckId: number;
   title: string;
@@ -74,6 +79,7 @@ export interface DashboardOverview {
   activeGoals: number;
   nextDeckId: number | null;
   nextDeckTitle: string | null;
+  decksDue: DeckDuePoint[];
   dueForecast: DueForecastPoint[];
   deckUsage: DeckUsagePoint[];
   reviewsByDay: DailyReviewsPoint[];

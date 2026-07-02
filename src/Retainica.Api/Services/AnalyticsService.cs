@@ -73,7 +73,7 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
             .Select(g => new { DeckId = g.Key, LastStudied = g.Max(s => s.StartedAt) })
             .ToDictionaryAsync(x => x.DeckId, x => x.LastStudied);
 
-        var nextDeck = decks
+        var deckDueInfo = decks
             .Select(d => new
             {
                 d.Id,
@@ -82,9 +82,18 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
                       + states.Count(s => s.DeckId == d.Id && DueNow(s.NextReviewDate) && !ReviewedToday(s.LastReviewedAt)),
                 LastStudied = lastStudiedByDeck.GetValueOrDefault(d.Id, DateTime.MinValue)
             })
+            .ToList();
+
+        var nextDeck = deckDueInfo
             .Where(d => d.Due > 0)
             .OrderBy(d => d.LastStudied)
             .FirstOrDefault();
+
+        // Per-deck due counts (incl. 0) so the study runner can label its
+        // "Next deck" / "Study again" buttons with what's actually due.
+        var decksDue = deckDueInfo
+            .Select(d => new DeckDueDto(d.Id, d.Due))
+            .ToList();
 
         // Study activity: pull raw timestamps and bucket client-side (avoids provider date-trunc quirks).
         var sessionStarts = await db.StudySessions
@@ -135,7 +144,7 @@ public class AnalyticsService(AppDbContext db, IGoalService goalService) : IAnal
         return new DashboardOverviewDto(
             totalDecks, totalCards, cardsDueToday, reviewsToday,
             currentStreak, longestStreak, activeGoals.Count,
-            nextDeck?.Id, nextDeck?.Title,
+            nextDeck?.Id, nextDeck?.Title, decksDue,
             dueForecast, deckUsage, reviewsByDay, goalDtos, isEmpty);
     }
 
