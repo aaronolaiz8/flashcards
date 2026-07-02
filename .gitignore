@@ -36,3 +36,10 @@ Thumbs.db
 
 # Personal study deck, not part of the app
 retainica-engineering-flashcards.csv
+
+# Internal working docs — not published
+CLAUDE.md
+DEPLOY.md
+DEPLOY_PLAN.md
+AI_GENERATION_SPEC.md
+flashcard-app-spec.md
